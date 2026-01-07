@@ -478,55 +478,56 @@
         // Copy to clipboard
         copyBtn.addEventListener('click', async () => {
             try {
-                // Check if clipboard API is available
-                if (!navigator.clipboard || !navigator.clipboard.write) {
-                    throw new Error('Clipboard API not available');
+                // Try modern Clipboard API first
+                if (navigator.clipboard && navigator.clipboard.write) {
+                    const blob = await new Promise((resolve, reject) => {
+                        canvas.toBlob(blob => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Failed to create blob'));
+                        }, 'image/png');
+                    });
+
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+
+                    copyBtn.classList.add('copied');
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Copied!
+                    `;
+                    setTimeout(() => {
+                        copyBtn.classList.remove('copied');
+                        copyBtn.innerHTML = originalHTML;
+                    }, 2000);
+                } else {
+                    throw new Error('Clipboard API not supported');
                 }
+            } catch (err) {
+                console.error('Copy failed:', err);
+                // Fallback: Download the image instead
+                const text = textInput.value || 'memorabilia';
+                const filename = text.slice(0, 20).replace(/[^a-z0-9]/gi, '_');
+                const link = document.createElement('a');
+                link.download = `memorabilia-${filename}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
 
-                const blob = await new Promise((resolve, reject) => {
-                    canvas.toBlob(blob => {
-                        if (blob) resolve(blob);
-                        else reject(new Error('Failed to create blob'));
-                    }, 'image/png');
-                });
-
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
-
+                // Show message that it was downloaded instead
                 copyBtn.classList.add('copied');
                 const originalHTML = copyBtn.innerHTML;
                 copyBtn.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    Copied!
+                    Downloaded!
                 `;
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
                     copyBtn.innerHTML = originalHTML;
-                }, 2000);
-            } catch (err) {
-                console.error('Copy failed:', err);
-                // Fallback: show error message
-                copyBtn.classList.add('error');
-                copyBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                    Failed
-                `;
-                setTimeout(() => {
-                    copyBtn.classList.remove('error');
-                    copyBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                        Copy
-                    `;
                 }, 2000);
             }
         });
