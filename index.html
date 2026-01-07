@@ -467,21 +467,92 @@
 
         // Download image
         downloadBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
             const text = textInput.value || 'memorabilia';
-            link.download = `memorabilia-${text.slice(0, 20).replace(/[^a-z0-9]/gi, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const filename = text.slice(0, 20).replace(/[^a-z0-9]/gi, '_');
+
+            // Download 1: Original image only
+            const link1 = document.createElement('a');
+            link1.download = `memorabilia-${filename}.png`;
+            link1.href = canvas.toDataURL('image/png');
+            link1.click();
+
+            // Download 2: Composite image with text
+            setTimeout(() => {
+                const compositeCanvas = document.createElement('canvas');
+                compositeCanvas.width = 600;
+                compositeCanvas.height = 350;
+                const compositeCtx = compositeCanvas.getContext('2d');
+
+                // White background
+                compositeCtx.fillStyle = '#fff';
+                compositeCtx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+
+                // Draw memorabilia image on left side (scaled down)
+                compositeCtx.drawImage(canvas, 0, 0, 350, 350);
+
+                // Draw text on right side
+                compositeCtx.fillStyle = '#000';
+                compositeCtx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+                compositeCtx.textAlign = 'left';
+                compositeCtx.textBaseline = 'top';
+
+                const textX = 370;
+                const textY = 20;
+                const maxWidth = 210;
+                const lineHeight = 24;
+
+                // Word wrap text
+                const words = text.split(' ');
+                let line = '';
+                let y = textY;
+
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = line + words[i] + ' ';
+                    const metrics = compositeCtx.measureText(testLine);
+
+                    if (metrics.width > maxWidth && i > 0) {
+                        compositeCtx.fillText(line, textX, y);
+                        line = words[i] + ' ';
+                        y += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                compositeCtx.fillText(line, textX, y);
+
+                // Add label above text
+                compositeCtx.fillStyle = '#999';
+                compositeCtx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+                compositeCtx.fillText('Text:', textX, textY - 18);
+
+                const link2 = document.createElement('a');
+                link2.download = `memorabilia-${filename}-with-text.png`;
+                link2.href = compositeCanvas.toDataURL('image/png');
+                link2.click();
+            }, 100);
         });
 
         // Copy to clipboard
         copyBtn.addEventListener('click', async () => {
             try {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                // Check if clipboard API is available
+                if (!navigator.clipboard || !navigator.clipboard.write) {
+                    throw new Error('Clipboard API not available');
+                }
+
+                const blob = await new Promise((resolve, reject) => {
+                    canvas.toBlob(blob => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('Failed to create blob'));
+                    }, 'image/png');
+                });
+
                 await navigator.clipboard.write([
                     new ClipboardItem({ 'image/png': blob })
                 ]);
+
                 copyBtn.classList.add('copied');
+                const originalHTML = copyBtn.innerHTML;
                 copyBtn.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
@@ -490,6 +561,22 @@
                 `;
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = originalHTML;
+                }, 2000);
+            } catch (err) {
+                console.error('Copy failed:', err);
+                // Fallback: show error message
+                copyBtn.classList.add('error');
+                copyBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Failed
+                `;
+                setTimeout(() => {
+                    copyBtn.classList.remove('error');
                     copyBtn.innerHTML = `
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -498,8 +585,6 @@
                         Copy
                     `;
                 }, 2000);
-            } catch (err) {
-                console.error('Copy failed:', err);
             }
         });
 
