@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HashPrint</title>
+    <title>Memorabilia</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,7 @@
             margin-bottom: 4px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ff3d71, #ff6d00);
+            background: linear-gradient(135deg, #4A148C, #C2185B, #E91E63, #F9A825);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -40,9 +40,47 @@
             font-weight: 400;
         }
 
-        .input-container {
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+            padding: 4px;
+            border-radius: 10px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
             width: 100%;
             max-width: 350px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .input-container {
+            width: 100%;
             margin-bottom: 18px;
         }
 
@@ -60,11 +98,49 @@
         }
 
         input[type="text"]:focus {
-            border-color: #ff3d71;
+            border-color: #C2185B;
         }
 
         input[type="text"]::placeholder {
             color: #999;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-area {
+            width: 100%;
+            padding: 40px 20px;
+            background: #f5f5f5;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 18px;
+        }
+
+        .upload-area:hover {
+            border-color: #C2185B;
+            background: #fafafa;
+        }
+
+        .upload-area.has-file {
+            border-color: #30d158;
+            background: #f0fdf4;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .upload-filename {
+            color: #30d158;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
 
         canvas {
@@ -76,6 +152,8 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
@@ -103,14 +181,24 @@
             transform: scale(0.97);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn svg {
             width: 16px;
             height: 16px;
         }
 
-        .btn.copied {
+        .btn.copied, .btn.success {
             border-color: #30d158;
             color: #30d158;
+        }
+
+        .btn.error {
+            border-color: #ff3b30;
+            color: #ff3b30;
         }
 
         .legend {
@@ -135,6 +223,32 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
+        }
+
+        .verify-result {
+            margin-top: 15px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
+
+        .verify-result.show {
+            display: block;
+        }
+
+        .verify-result.success {
+            background: #f0fdf4;
+            border: 1px solid #30d158;
+            color: #30d158;
+        }
+
+        .verify-result.error {
+            background: #fff5f5;
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
         }
 
         .footer {
@@ -165,44 +279,76 @@
         }
 
         .footer .credit a:hover {
-            color: #ff3d71;
+            color: #C2185B;
         }
     </style>
 </head>
 <body>
-    <div class="logo">HashPrint</div>
+    <div class="logo">Memorabilia</div>
     <p class="tagline">Your words, visualized</p>
 
-    <div class="input-container">
-        <input type="text" id="textInput" placeholder="Type anything..." value="Hello World">
+    <div class="tabs">
+        <button class="tab active" data-tab="create">Create</button>
+        <button class="tab" data-tab="verify">Verify</button>
     </div>
 
-    <canvas id="canvas" width="350" height="350"></canvas>
+    <div class="tab-content active" id="create-tab">
+        <div class="input-container">
+            <input type="text" id="textInput" placeholder="Type anything..." value="Hello World">
+        </div>
 
-    <div class="actions">
-        <button class="btn" id="downloadBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Download
-        </button>
-        <button class="btn" id="copyBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            Copy
-        </button>
+        <canvas id="canvas" width="350" height="350"></canvas>
+
+        <div class="actions">
+            <button class="btn" id="downloadBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download
+            </button>
+            <button class="btn" id="copyBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+            </button>
+        </div>
+
+        <div class="legend" id="legend"></div>
     </div>
 
-    <div class="legend" id="legend"></div>
+    <div class="tab-content" id="verify-tab">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-text">Click to upload Memorabilia image</div>
+            <div class="upload-filename" id="uploadFilename"></div>
+            <input type="file" id="fileInput" accept="image/png">
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="verifyTextInput" placeholder="Type the text you think created it...">
+        </div>
+
+        <canvas id="verifyCanvas" width="350" height="350" style="display:none;"></canvas>
+
+        <div class="actions">
+            <button class="btn" id="verifyBtn" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Verify
+            </button>
+        </div>
+
+        <div class="verify-result" id="verifyResult"></div>
+    </div>
 
     <div class="footer">
         <p>
             <span class="highlight">Every text has a unique fingerprint.</span><br>
-            Your text is converted into a SHA-512 hash, then mapped to digits 0-9. Each digit becomes a colored dot on a 32×32 grid. Adjacent dots with the same digit connect automatically. No two inputs will ever produce the same image — with more possible patterns than atoms in the observable universe, your HashPrint is truly one of a kind.
+            Your text is converted into a SHA-512 hash, then mapped to digits 0-9. Each digit becomes a colored dot on a 32×32 grid. Adjacent dots with the same digit connect automatically. No two inputs will ever produce the same image — with more possible patterns than atoms in the observable universe, your Memorabilia is truly one of a kind.
         </p>
         <p class="credit">
             Made by <a href="https://github.com/vtmade" target="_blank">Vinay Thakur</a>
@@ -211,15 +357,31 @@
 
     <script>
         const colors = [
-            '#ff1744', '#ff3d71', '#ff6b9d', '#e91e8c', '#d500f9',
-            '#aa00ff', '#ff6d00', '#ffab40', '#ff4081', '#f50057'
+            '#4A148C', // Deep purple
+            '#6A1B9A', // Purple
+            '#8E24AA', // Medium purple
+            '#AB47BC', // Light purple
+            '#C2185B', // Magenta
+            '#D81B60', // Pink magenta
+            '#E91E63', // Pink
+            '#EC407A', // Light pink
+            '#F06292', // Lighter pink
+            '#F9A825'  // Golden orange
         ];
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const verifyCanvas = document.getElementById('verifyCanvas');
+        const verifyCtx = verifyCanvas.getContext('2d');
         const textInput = document.getElementById('textInput');
+        const verifyTextInput = document.getElementById('verifyTextInput');
         const downloadBtn = document.getElementById('downloadBtn');
         const copyBtn = document.getElementById('copyBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadFilename = document.getElementById('uploadFilename');
+        const verifyResult = document.getElementById('verifyResult');
 
         const GRID = 32;
         const TOTAL = GRID * GRID;
@@ -228,6 +390,20 @@
         const DOT_R = CELL * 0.22;
         const LINE_W = CELL * 0.15;
 
+        let uploadedImageData = null;
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Legend
         document.getElementById('legend').innerHTML = '0123456789'.split('').map((c, i) =>
             `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div><span>${c}</span></div>`
         ).join('');
@@ -253,15 +429,15 @@
             return { x: PAD + col * CELL + CELL / 2, y: PAD + row * CELL + CELL / 2 };
         }
 
-        async function draw(text) {
+        async function draw(text, targetCtx = ctx) {
             const hash = await getHash(text || ' ');
             const d = hash.split('').map(c => parseInt(c, 10));
 
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            targetCtx.fillStyle = '#fff';
+            targetCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.lineWidth = LINE_W;
-            ctx.lineCap = 'round';
+            targetCtx.lineWidth = LINE_W;
+            targetCtx.lineCap = 'round';
 
             for (let i = 0; i < TOTAL; i++) {
                 const row = Math.floor(i / GRID), col = i % GRID;
@@ -271,29 +447,29 @@
                     .forEach(([offset, valid]) => {
                         if (valid && c === d[i + offset]) {
                             const to = pos(i + offset);
-                            ctx.strokeStyle = colors[c];
-                            ctx.beginPath();
-                            ctx.moveTo(from.x, from.y);
-                            ctx.lineTo(to.x, to.y);
-                            ctx.stroke();
+                            targetCtx.strokeStyle = colors[c];
+                            targetCtx.beginPath();
+                            targetCtx.moveTo(from.x, from.y);
+                            targetCtx.lineTo(to.x, to.y);
+                            targetCtx.stroke();
                         }
                     });
             }
 
             for (let i = 0; i < TOTAL; i++) {
                 const { x, y } = pos(i);
-                ctx.fillStyle = colors[d[i]];
-                ctx.beginPath();
-                ctx.arc(x, y, DOT_R, 0, Math.PI * 2);
-                ctx.fill();
+                targetCtx.fillStyle = colors[d[i]];
+                targetCtx.beginPath();
+                targetCtx.arc(x, y, DOT_R, 0, Math.PI * 2);
+                targetCtx.fill();
             }
         }
 
         // Download image
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            const text = textInput.value || 'hashprint';
-            link.download = `hashprint-${text.slice(0, 20).replace(/[^a-z0-9]/gi, '_')}.png`;
+            const text = textInput.value || 'memorabilia';
+            link.download = `memorabilia-${text.slice(0, 20).replace(/[^a-z0-9]/gi, '_')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
@@ -327,8 +503,84 @@
             }
         });
 
+        // File upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = 350;
+                        tempCanvas.height = 350;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0, 350, 350);
+                        uploadedImageData = tempCtx.getImageData(0, 0, 350, 350);
+
+                        uploadArea.classList.add('has-file');
+                        uploadFilename.textContent = file.name;
+                        verifyBtn.disabled = false;
+                        verifyResult.classList.remove('show');
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Verify functionality
+        verifyBtn.addEventListener('click', async () => {
+            if (!uploadedImageData || !verifyTextInput.value) return;
+
+            // Generate image from input text
+            await draw(verifyTextInput.value, verifyCtx);
+            const generatedImageData = verifyCtx.getImageData(0, 0, 350, 350);
+
+            // Compare pixel by pixel
+            let matchingPixels = 0;
+            const totalPixels = 350 * 350 * 4;
+
+            for (let i = 0; i < uploadedImageData.data.length; i++) {
+                if (uploadedImageData.data[i] === generatedImageData.data[i]) {
+                    matchingPixels++;
+                }
+            }
+
+            const matchPercentage = (matchingPixels / totalPixels) * 100;
+            const isMatch = matchPercentage >= 95;
+
+            verifyResult.classList.remove('success', 'error');
+            verifyResult.classList.add('show', isMatch ? 'success' : 'error');
+
+            if (isMatch) {
+                verifyResult.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    It's a match! (${matchPercentage.toFixed(1)}%)
+                `;
+            } else {
+                verifyResult.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    No match (${matchPercentage.toFixed(1)}% similarity)
+                `;
+            }
+        });
+
+        // Create tab input handler
         let t;
-        textInput.addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => draw(e.target.value), 100); });
+        textInput.addEventListener('input', e => {
+            clearTimeout(t);
+            t = setTimeout(() => draw(e.target.value), 100);
+        });
+
+        // Initial draw
         draw(textInput.value);
     </script>
 </body>
