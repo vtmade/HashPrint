@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HashPrint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ff3d71, #ff6d00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        .input-container {
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 18px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            font-family: ui-monospace, monospace;
+            background: #1c1c1e;
+            border: 1px solid #3a3a3c;
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff3d71;
+        }
+
+        input[type="text"]::placeholder {
+            color: #48484a;
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            font-size: 0.8rem;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 500;
+            background: #1c1c1e;
+            border: 1px solid #3a3a3c;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #2c2c2e;
+            border-color: #4a4a4c;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn.copied {
+            border-color: #30d158;
+            color: #30d158;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+            max-width: 350px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.65rem;
+            color: #666;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            max-width: 320px;
+        }
+
+        .footer p {
+            color: #444;
+            font-size: 0.65rem;
+            line-height: 1.5;
+        }
+
+        .footer .highlight {
+            color: #666;
+        }
+
+        .footer .credit {
+            margin-top: 12px;
+            font-size: 0.7rem;
+        }
+
+        .footer .credit a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer .credit a:hover {
+            color: #ff3d71;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">HashPrint</div>
+    <p class="tagline">Your words, visualized</p>
+
+    <div class="input-container">
+        <input type="text" id="textInput" placeholder="Type anything..." value="Hello World">
+    </div>
+
+    <canvas id="canvas" width="350" height="350"></canvas>
+
+    <div class="actions">
+        <button class="btn" id="downloadBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download
+        </button>
+        <button class="btn" id="copyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+        </button>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="footer">
+        <p>
+            <span class="highlight">Every text has a unique fingerprint.</span><br>
+            Your text is converted into a SHA-512 hash, then mapped to digits 0-9. Each digit becomes a colored dot on a 32×32 grid. Adjacent dots with the same digit connect automatically. No two inputs will ever produce the same image — with more possible patterns than atoms in the observable universe, your HashPrint is truly one of a kind.
+        </p>
+        <p class="credit">
+            Made by <a href="https://github.com/vtmade" target="_blank">Vinay Thakur</a>
+        </p>
+    </div>
+
+    <script>
+        const colors = [
+            '#ff1744', '#ff3d71', '#ff6b9d', '#e91e8c', '#d500f9',
+            '#aa00ff', '#ff6d00', '#ffab40', '#ff4081', '#f50057'
+        ];
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textInput = document.getElementById('textInput');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const copyBtn = document.getElementById('copyBtn');
+
+        const GRID = 32;
+        const TOTAL = GRID * GRID;
+        const PAD = 8;
+        const CELL = (canvas.width - PAD * 2) / GRID;
+        const DOT_R = CELL * 0.22;
+        const LINE_W = CELL * 0.15;
+
+        document.getElementById('legend').innerHTML = '0123456789'.split('').map((c, i) =>
+            `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div><span>${c}</span></div>`
+        ).join('');
+
+        async function sha512(msg) {
+            const buf = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(msg));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function getHash(text) {
+            let result = '', i = 0;
+            while (result.length < TOTAL) {
+                const hash = await sha512(text + '|' + i++);
+                for (const char of hash) {
+                    result += parseInt(char, 16) % 10;
+                }
+            }
+            return result.slice(0, TOTAL);
+        }
+
+        function pos(i) {
+            const col = i % GRID, row = Math.floor(i / GRID);
+            return { x: PAD + col * CELL + CELL / 2, y: PAD + row * CELL + CELL / 2 };
+        }
+
+        async function draw(text) {
+            const hash = await getHash(text || ' ');
+            const d = hash.split('').map(c => parseInt(c, 10));
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = LINE_W;
+            ctx.lineCap = 'round';
+
+            for (let i = 0; i < TOTAL; i++) {
+                const row = Math.floor(i / GRID), col = i % GRID;
+                const from = pos(i), c = d[i];
+
+                [[1, col < GRID-1], [GRID, row < GRID-1], [GRID+1, col < GRID-1 && row < GRID-1], [GRID-1, col > 0 && row < GRID-1]]
+                    .forEach(([offset, valid]) => {
+                        if (valid && c === d[i + offset]) {
+                            const to = pos(i + offset);
+                            ctx.strokeStyle = colors[c];
+                            ctx.beginPath();
+                            ctx.moveTo(from.x, from.y);
+                            ctx.lineTo(to.x, to.y);
+                            ctx.stroke();
+                        }
+                    });
+            }
+
+            for (let i = 0; i < TOTAL; i++) {
+                const { x, y } = pos(i);
+                ctx.fillStyle = colors[d[i]];
+                ctx.beginPath();
+                ctx.arc(x, y, DOT_R, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Download image
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            const text = textInput.value || 'hashprint';
+            link.download = `hashprint-${text.slice(0, 20).replace(/[^a-z0-9]/gi, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // Copy to clipboard
+        copyBtn.addEventListener('click', async () => {
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Copied!
+                `;
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        Copy
+                    `;
+                }, 2000);
+            } catch (err) {
+                console.error('Copy failed:', err);
+            }
+        });
+
+        let t;
+        textInput.addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => draw(e.target.value), 100); });
+        draw(textInput.value);
+    </script>
+</body>
+</html>
