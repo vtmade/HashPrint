@@ -27,7 +27,7 @@
             margin-bottom: 4px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #4A148C, #C2185B, #E91E63, #F9A825);
+            background: linear-gradient(135deg, #FF1493, #40E0D0, #FFD700);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -70,7 +70,7 @@
         .tab-content {
             display: none;
             width: 100%;
-            max-width: 350px;
+            max-width: 500px;
             flex-direction: column;
             align-items: center;
         }
@@ -206,7 +206,7 @@
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 18px;
-            max-width: 350px;
+            max-width: 500px;
             justify-content: center;
         }
 
@@ -297,7 +297,7 @@
             <input type="text" id="textInput" placeholder="Type anything..." value="Hello World">
         </div>
 
-        <canvas id="canvas" width="350" height="350"></canvas>
+        <canvas id="canvas" width="500" height="500"></canvas>
 
         <div class="actions">
             <button class="btn" id="downloadBtn">
@@ -331,7 +331,7 @@
             <input type="text" id="verifyTextInput" placeholder="Type the text you think created it...">
         </div>
 
-        <canvas id="verifyCanvas" width="350" height="350" style="display:none;"></canvas>
+        <canvas id="verifyCanvas" width="500" height="500" style="display:none;"></canvas>
 
         <div class="actions">
             <button class="btn" id="verifyBtn" disabled>
@@ -357,16 +357,16 @@
 
     <script>
         const colors = [
-            '#4A148C', // Deep purple
-            '#6A1B9A', // Purple
-            '#8E24AA', // Medium purple
-            '#AB47BC', // Light purple
-            '#C2185B', // Magenta
-            '#D81B60', // Pink magenta
-            '#E91E63', // Pink
-            '#EC407A', // Light pink
-            '#F06292', // Lighter pink
-            '#F9A825'  // Golden orange
+            '#FF1493', // Deep pink
+            '#FF69B4', // Hot pink
+            '#FFB6C1', // Light pink
+            '#FFC0CB', // Pale pink
+            '#00CED1', // Dark turquoise
+            '#40E0D0', // Turquoise
+            '#87CEEB', // Sky blue
+            '#FFD700', // Cadmium yellow / Gold
+            '#FFEC8B', // Light cadmium yellow
+            '#FFA500'  // Orange yellow
         ];
 
         const canvas = document.getElementById('canvas');
@@ -479,27 +479,27 @@
             // Download 2: Composite image with text
             setTimeout(() => {
                 const compositeCanvas = document.createElement('canvas');
-                compositeCanvas.width = 600;
-                compositeCanvas.height = 350;
+                compositeCanvas.width = 800;
+                compositeCanvas.height = 500;
                 const compositeCtx = compositeCanvas.getContext('2d');
 
                 // White background
                 compositeCtx.fillStyle = '#fff';
                 compositeCtx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
 
-                // Draw memorabilia image on left side (scaled down)
-                compositeCtx.drawImage(canvas, 0, 0, 350, 350);
+                // Draw memorabilia image on left side
+                compositeCtx.drawImage(canvas, 0, 0, 500, 500);
 
                 // Draw text on right side
                 compositeCtx.fillStyle = '#000';
-                compositeCtx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+                compositeCtx.font = '18px -apple-system, BlinkMacSystemFont, sans-serif';
                 compositeCtx.textAlign = 'left';
                 compositeCtx.textBaseline = 'top';
 
-                const textX = 370;
-                const textY = 20;
-                const maxWidth = 210;
-                const lineHeight = 24;
+                const textX = 530;
+                const textY = 30;
+                const maxWidth = 250;
+                const lineHeight = 28;
 
                 // Word wrap text
                 const words = text.split(' ');
@@ -522,14 +522,24 @@
 
                 // Add label above text
                 compositeCtx.fillStyle = '#999';
-                compositeCtx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
-                compositeCtx.fillText('Text:', textX, textY - 18);
+                compositeCtx.font = '14px -apple-system, BlinkMacSystemFont, sans-serif';
+                compositeCtx.fillText('Text:', textX, textY - 22);
 
                 const link2 = document.createElement('a');
                 link2.download = `memorabilia-${filename}-with-text.png`;
                 link2.href = compositeCanvas.toDataURL('image/png');
                 link2.click();
             }, 100);
+
+            // Download 3: Text file
+            setTimeout(() => {
+                const blob = new Blob([text], { type: 'text/plain' });
+                const link3 = document.createElement('a');
+                link3.download = `memorabilia-${filename}.txt`;
+                link3.href = URL.createObjectURL(blob);
+                link3.click();
+                URL.revokeObjectURL(link3.href);
+            }, 200);
         });
 
         // Copy to clipboard
@@ -599,11 +609,11 @@
                     const img = new Image();
                     img.onload = () => {
                         const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = 350;
-                        tempCanvas.height = 350;
+                        tempCanvas.width = 500;
+                        tempCanvas.height = 500;
                         const tempCtx = tempCanvas.getContext('2d');
-                        tempCtx.drawImage(img, 0, 0, 350, 350);
-                        uploadedImageData = tempCtx.getImageData(0, 0, 350, 350);
+                        tempCtx.drawImage(img, 0, 0, 500, 500);
+                        uploadedImageData = tempCtx.getImageData(0, 0, 500, 500);
 
                         uploadArea.classList.add('has-file');
                         uploadFilename.textContent = file.name;
@@ -622,11 +632,11 @@
 
             // Generate image from input text
             await draw(verifyTextInput.value, verifyCtx);
-            const generatedImageData = verifyCtx.getImageData(0, 0, 350, 350);
+            const generatedImageData = verifyCtx.getImageData(0, 0, 500, 500);
 
             // Compare pixel by pixel
             let matchingPixels = 0;
-            const totalPixels = 350 * 350 * 4;
+            const totalPixels = 500 * 500 * 4;
 
             for (let i = 0; i < uploadedImageData.data.length; i++) {
                 if (uploadedImageData.data[i] === generatedImageData.data[i]) {
