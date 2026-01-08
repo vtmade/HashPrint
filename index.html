@@ -625,7 +625,7 @@
                                 const midY = from.y + (to.y - from.y) * t;
                                 const perpX = -(to.y - from.y) / Math.hypot(to.x - from.x, to.y - from.y);
                                 const perpY = (to.x - from.x) / Math.hypot(to.x - from.x, to.y - from.y);
-                                const curve = Math.sin(t * Math.PI) * (CELL * 0.1);
+                                const curve = Math.sin(t * Math.PI) * (CELL * 0.15);
 
                                 const x = midX + perpX * curve;
                                 const y = midY + perpY * curve;
@@ -643,7 +643,7 @@
                 const { x, y } = pos(i);
                 targetCtx.fillStyle = colors[d[i]];
                 targetCtx.beginPath();
-                targetCtx.arc(x, y, DOT_R * 1.1, 0, Math.PI * 2);
+                targetCtx.arc(x, y, DOT_R * 1.265, 0, Math.PI * 2);
                 targetCtx.fill();
             }
         }
