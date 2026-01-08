@@ -616,7 +616,7 @@
 
                             // Draw thick organic connection with intermediate circles
                             const steps = 5;
-                            const connectionRadius = DOT_R * 1.2;
+                            const connectionRadius = DOT_R * 1.0;
 
                             for (let step = 0; step <= steps; step++) {
                                 const t = step / steps;
@@ -643,7 +643,7 @@
                 const { x, y } = pos(i);
                 targetCtx.fillStyle = colors[d[i]];
                 targetCtx.beginPath();
-                targetCtx.arc(x, y, DOT_R * 1.3, 0, Math.PI * 2);
+                targetCtx.arc(x, y, DOT_R * 1.1, 0, Math.PI * 2);
                 targetCtx.fill();
             }
         }
