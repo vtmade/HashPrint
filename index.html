@@ -603,7 +603,10 @@
             targetCtx.fillStyle = '#fff';
             targetCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw organic connections between adjacent same-digit dots
+            targetCtx.lineWidth = LINE_W;
+            targetCtx.lineCap = 'round';
+
+            // Draw straight line connections
             for (let i = 0; i < TOTAL; i++) {
                 const row = Math.floor(i / GRID), col = i % GRID;
                 const from = pos(i), c = d[i];
@@ -612,38 +615,21 @@
                     .forEach(([offset, valid]) => {
                         if (valid && c === d[i + offset]) {
                             const to = pos(i + offset);
-                            targetCtx.fillStyle = colors[c];
-
-                            // Draw thick organic connection with intermediate circles
-                            const steps = 12;
-                            const connectionRadius = DOT_R * 0.72;
-
-                            for (let step = 0; step <= steps; step++) {
-                                const t = step / steps;
-                                // Slight curve for organic feel
-                                const midX = from.x + (to.x - from.x) * t;
-                                const midY = from.y + (to.y - from.y) * t;
-                                const perpX = -(to.y - from.y) / Math.hypot(to.x - from.x, to.y - from.y);
-                                const perpY = (to.x - from.x) / Math.hypot(to.x - from.x, to.y - from.y);
-                                const curve = Math.sin(t * Math.PI) * (CELL * 0.15);
-
-                                const x = midX + perpX * curve;
-                                const y = midY + perpY * curve;
-
-                                targetCtx.beginPath();
-                                targetCtx.arc(x, y, connectionRadius, 0, Math.PI * 2);
-                                targetCtx.fill();
-                            }
+                            targetCtx.strokeStyle = colors[c];
+                            targetCtx.beginPath();
+                            targetCtx.moveTo(from.x, from.y);
+                            targetCtx.lineTo(to.x, to.y);
+                            targetCtx.stroke();
                         }
                     });
             }
 
-            // Draw main dots on top
+            // Draw dots on top
             for (let i = 0; i < TOTAL; i++) {
                 const { x, y } = pos(i);
                 targetCtx.fillStyle = colors[d[i]];
                 targetCtx.beginPath();
-                targetCtx.arc(x, y, DOT_R * 1.265, 0, Math.PI * 2);
+                targetCtx.arc(x, y, DOT_R, 0, Math.PI * 2);
                 targetCtx.fill();
             }
         }
