@@ -406,19 +406,19 @@
         }
 
         /* Chord Chart Styles */
-        #chord-container {
+        #chord-container, #main-chord-svg-container {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 350px;
         }
 
-        #chord-svg {
+        #chord-svg, #main-chord-svg {
             border-radius: 8px;
             background: white;
         }
 
-        .dark-theme #chord-svg {
+        .dark-theme #chord-svg, .dark-theme #main-chord-svg {
             background: white;
         }
 
@@ -554,9 +554,49 @@
                 </svg>
                 Copy
             </button>
+            <button class="btn" id="toggleChordBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 12h8"/>
+                    <path d="M12 8v8"/>
+                </svg>
+                Show Chord Chart
+            </button>
         </div>
 
         <div class="legend" id="legend"></div>
+
+        <div id="main-chord-container" style="display: none; margin-top: 20px;">
+            <div id="main-chord-svg-container"></div>
+            <div class="chord-info" style="margin-top: 12px;">
+                <div class="chord-hash">
+                    <strong>SHA-256 Hash:</strong> <span id="main-chord-hash">-</span>
+                </div>
+                <div class="chord-params-grid">
+                    <div class="chord-param-box">
+                        <div class="chord-param-title">Chord 1 (Red)</div>
+                        <div class="chord-param-row"><span>a:</span><span id="main-chord1-a">-</span></div>
+                        <div class="chord-param-row"><span>b:</span><span id="main-chord1-b">-</span></div>
+                        <div class="chord-param-row"><span>c:</span><span id="main-chord1-c">-</span></div>
+                        <div class="chord-param-row"><span>d:</span><span id="main-chord1-d">-</span></div>
+                    </div>
+                    <div class="chord-param-box">
+                        <div class="chord-param-title">Chord 2 (Pink)</div>
+                        <div class="chord-param-row"><span>a:</span><span id="main-chord2-a">-</span></div>
+                        <div class="chord-param-row"><span>b:</span><span id="main-chord2-b">-</span></div>
+                        <div class="chord-param-row"><span>c:</span><span id="main-chord2-c">-</span></div>
+                        <div class="chord-param-row"><span>d:</span><span id="main-chord2-d">-</span></div>
+                    </div>
+                    <div class="chord-param-box">
+                        <div class="chord-param-title">Chord 3 (Yellow)</div>
+                        <div class="chord-param-row"><span>a:</span><span id="main-chord3-a">-</span></div>
+                        <div class="chord-param-row"><span>b:</span><span id="main-chord3-b">-</span></div>
+                        <div class="chord-param-row"><span>c:</span><span id="main-chord3-c">-</span></div>
+                        <div class="chord-param-row"><span>d:</span><span id="main-chord3-d">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="tab-content" id="verify-tab">
@@ -1157,6 +1197,133 @@
 
         // Initial chord chart generation
         generateChordChart(chordInput.value);
+
+        // ==================== MAIN TAB CHORD CHART BUTTON ====================
+        const toggleChordBtn = document.getElementById('toggleChordBtn');
+        const mainChordContainer = document.getElementById('main-chord-container');
+        let isChordVisible = false;
+
+        // Function to generate chord chart on main tab
+        async function generateMainChordChart(text) {
+            try {
+                const hash = await hashCodeChord(text);
+
+                // Update display
+                document.getElementById('main-chord-hash').textContent = hash.full;
+
+                const chord1 = extractChordParams(hash.chord1);
+                const chord2 = extractChordParams(hash.chord2);
+                const chord3 = extractChordParams(hash.chord3);
+
+                // Generate colors
+                const colors1 = generateColorFromValue(0);
+                const colors2 = generateColorFromValue(1);
+                const colors3 = generateColorFromValue(2);
+
+                // Update parameter displays
+                ['a', 'b', 'c', 'd'].forEach(key => {
+                    document.getElementById(`main-chord1-${key}`).textContent = chord1[key];
+                    document.getElementById(`main-chord2-${key}`).textContent = chord2[key];
+                    document.getElementById(`main-chord3-${key}`).textContent = chord3[key];
+                });
+
+                const size = 350;
+
+                // Clear previous
+                d3.select('#main-chord-svg-container').selectAll('*').remove();
+
+                // Create SVG
+                const svg = d3.select('#main-chord-svg-container')
+                    .append('svg')
+                    .attr('id', 'main-chord-svg')
+                    .attr('width', size)
+                    .attr('height', size);
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${size/2},${size/2})`);
+
+                const outerRadius = size * 0.42;
+                const innerRadius = outerRadius - 20;
+
+                // Create ribbon generator
+                const ribbon = d3.ribbon()
+                    .radius(innerRadius);
+
+                // Generate angles for all three chords
+                const angles1 = paramsToAngles(chord1.a, chord1.b, chord1.c, chord1.d);
+                const angles2 = paramsToAngles(chord2.a, chord2.b, chord2.c, chord2.d);
+                const angles3 = paramsToAngles(chord3.a, chord3.b, chord3.c, chord3.d);
+
+                // Create chord data
+                const chordData = [
+                    { angles: angles1, colors: colors1, id: 1 },
+                    { angles: angles2, colors: colors2, id: 2 },
+                    { angles: angles3, colors: colors3, id: 3 }
+                ];
+
+                // Draw chords
+                chordData.forEach(({ angles, colors, id }) => {
+                    const chordPath = ribbon({
+                        source: {
+                            startAngle: angles.s1,
+                            endAngle: angles.s2,
+                            radius: innerRadius
+                        },
+                        target: {
+                            startAngle: angles.s3,
+                            endAngle: angles.s4,
+                            radius: innerRadius
+                        }
+                    });
+
+                    g.append('path')
+                        .attr('d', chordPath)
+                        .attr('fill', colors.solidColor)
+                        .attr('stroke', '#8B4513')
+                        .attr('stroke-width', 1.5)
+                        .attr('opacity', 0.9)
+                        .attr('fill-rule', 'evenodd');
+                });
+            } catch (error) {
+                console.error('Error generating main chord chart:', error);
+            }
+        }
+
+        // Toggle chord chart visibility
+        toggleChordBtn.addEventListener('click', () => {
+            isChordVisible = !isChordVisible;
+
+            if (isChordVisible) {
+                mainChordContainer.style.display = 'block';
+                toggleChordBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    Hide Chord Chart
+                `;
+                generateMainChordChart(textInput.value);
+            } else {
+                mainChordContainer.style.display = 'none';
+                toggleChordBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 12h8"/>
+                        <path d="M12 8v8"/>
+                    </svg>
+                    Show Chord Chart
+                `;
+            }
+        });
+
+        // Update main chord chart when text input changes (if visible)
+        textInput.addEventListener('input', e => {
+            if (isChordVisible) {
+                clearTimeout(t);
+                setTimeout(() => generateMainChordChart(e.target.value), 100);
+            }
+        });
     </script>
 </body>
 </html>
