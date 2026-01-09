@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memorabilia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -403,6 +404,104 @@
         .footer .credit a:hover {
             color: #C2185B;
         }
+
+        /* Chord Chart Styles */
+        #chord-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 350px;
+        }
+
+        #chord-svg {
+            border-radius: 8px;
+            background: white;
+        }
+
+        .dark-theme #chord-svg {
+            background: white;
+        }
+
+        .chord-info {
+            width: 100%;
+            margin-top: 18px;
+        }
+
+        .chord-hash {
+            background: #f5f5f5;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.7rem;
+            word-break: break-all;
+        }
+
+        .dark-theme .chord-hash {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        .chord-params-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .chord-param-box {
+            background: #f5f5f5;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .dark-theme .chord-param-box {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        .chord-param-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            color: #2d3748;
+        }
+
+        .dark-theme .chord-param-title {
+            color: #e0e0e0;
+        }
+
+        .chord-param-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.65rem;
+        }
+
+        .chord-param-row span:first-child {
+            color: #718096;
+        }
+
+        .dark-theme .chord-param-row span:first-child {
+            color: #999;
+        }
+
+        .chord-param-row span:last-child {
+            font-family: ui-monospace, monospace;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .dark-theme .chord-param-row span:last-child {
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 400px) {
+            .chord-params-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -429,6 +528,7 @@
     <div class="tabs">
         <button class="tab active" data-tab="create">Create</button>
         <button class="tab" data-tab="verify">Verify</button>
+        <button class="tab" data-tab="chord">Chord Chart</button>
     </div>
 
     <div class="tab-content active" id="create-tab">
@@ -482,6 +582,54 @@
         </div>
 
         <div class="verify-result" id="verifyResult"></div>
+    </div>
+
+    <div class="tab-content" id="chord-tab">
+        <div class="input-container">
+            <input type="text" id="chordInput" placeholder="Type anything..." value="Hello World">
+        </div>
+
+        <div id="chord-container"></div>
+
+        <div class="actions">
+            <button class="btn" id="chordDownloadBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download
+            </button>
+        </div>
+
+        <div class="chord-info" id="chordInfo">
+            <div class="chord-hash">
+                <strong>SHA-256 Hash:</strong> <span id="chord-hash-value">-</span>
+            </div>
+            <div class="chord-params-grid">
+                <div class="chord-param-box">
+                    <div class="chord-param-title">Chord 1 (Red)</div>
+                    <div class="chord-param-row"><span>a:</span><span id="chord1-a">-</span></div>
+                    <div class="chord-param-row"><span>b:</span><span id="chord1-b">-</span></div>
+                    <div class="chord-param-row"><span>c:</span><span id="chord1-c">-</span></div>
+                    <div class="chord-param-row"><span>d:</span><span id="chord1-d">-</span></div>
+                </div>
+                <div class="chord-param-box">
+                    <div class="chord-param-title">Chord 2 (Pink)</div>
+                    <div class="chord-param-row"><span>a:</span><span id="chord2-a">-</span></div>
+                    <div class="chord-param-row"><span>b:</span><span id="chord2-b">-</span></div>
+                    <div class="chord-param-row"><span>c:</span><span id="chord2-c">-</span></div>
+                    <div class="chord-param-row"><span>d:</span><span id="chord2-d">-</span></div>
+                </div>
+                <div class="chord-param-box">
+                    <div class="chord-param-title">Chord 3 (Yellow)</div>
+                    <div class="chord-param-row"><span>a:</span><span id="chord3-a">-</span></div>
+                    <div class="chord-param-row"><span>b:</span><span id="chord3-b">-</span></div>
+                    <div class="chord-param-row"><span>c:</span><span id="chord3-c">-</span></div>
+                    <div class="chord-param-row"><span>d:</span><span id="chord3-d">-</span></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="footer">
@@ -781,6 +929,234 @@
 
         // Initial draw
         draw(textInput.value);
+
+        // ==================== CHORD CHART FUNCTIONALITY ====================
+        const chordInput = document.getElementById('chordInput');
+        const chordDownloadBtn = document.getElementById('chordDownloadBtn');
+
+        // SHA-256 hash function
+        async function hashCodeChord(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = new Uint8Array(hashBuffer);
+
+            // Extract three 16-bit values from different parts of the hash
+            const chord1Hash = (hashArray[0] << 8) | hashArray[1];
+            const chord2Hash = (hashArray[8] << 8) | hashArray[9];
+            const chord3Hash = (hashArray[16] << 8) | hashArray[17];
+
+            const fullHashHex = Array.from(hashArray)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('').substring(0, 16);
+
+            return {
+                full: fullHashHex,
+                chord1: chord1Hash,
+                chord2: chord2Hash,
+                chord3: chord3Hash
+            };
+        }
+
+        // Extract bits from hash
+        function getBits(hash, startBit, endBit) {
+            const mask = ((1 << (endBit - startBit + 1)) - 1);
+            return (hash >>> startBit) & mask;
+        }
+
+        // Bit definitions
+        const bitDef = {
+            a: [0, 4],
+            b: [5, 9],
+            c: [10, 12],
+            d: [13, 15],
+            color: [0, 7]
+        };
+
+        function extractChordParams(hash16bit) {
+            return {
+                a: getBits(hash16bit, ...bitDef.a),
+                b: getBits(hash16bit, ...bitDef.b),
+                c: getBits(hash16bit, ...bitDef.c),
+                d: getBits(hash16bit, ...bitDef.d),
+                color: getBits(hash16bit, ...bitDef.color)
+            };
+        }
+
+        // Convert parameters to angles
+        function paramsToAngles(a, b, c, d) {
+            const scale = 2 * Math.PI / 32;
+            const minArcSize = Math.PI / 4;
+            const maxArcSize = Math.PI / 2;
+
+            const baseA = a * scale;
+            const baseB = (b * scale + Math.PI) % (2 * Math.PI);
+
+            const arcSize1 = minArcSize + (c / 7) * (maxArcSize - minArcSize);
+            const arcSize2 = minArcSize + (d / 7) * (maxArcSize - minArcSize);
+
+            return {
+                s1: baseA,
+                s2: baseA + arcSize1,
+                s3: baseB,
+                s4: baseB + arcSize2
+            };
+        }
+
+        // Solid colors for the three chords
+        const solidColors = [
+            { name: "Red", color: "#dc2626" },
+            { name: "Pink", color: "#c71585" },
+            { name: "Yellow", color: "#eab308" }
+        ];
+
+        function generateColorFromValue(chordIndex) {
+            const selectedColor = solidColors[chordIndex % solidColors.length];
+            return {
+                name: selectedColor.name,
+                solidColor: selectedColor.color,
+                colorIndex: chordIndex + 1
+            };
+        }
+
+        async function generateChordChart(text) {
+            try {
+                const hash = await hashCodeChord(text);
+
+                // Update display
+                document.getElementById('chord-hash-value').textContent = hash.full;
+
+                const chord1 = extractChordParams(hash.chord1);
+                const chord2 = extractChordParams(hash.chord2);
+                const chord3 = extractChordParams(hash.chord3);
+
+                // Generate colors
+                const colors1 = generateColorFromValue(0);
+                const colors2 = generateColorFromValue(1);
+                const colors3 = generateColorFromValue(2);
+
+                // Update parameter displays
+                ['a', 'b', 'c', 'd'].forEach(key => {
+                    document.getElementById(`chord1-${key}`).textContent = chord1[key];
+                    document.getElementById(`chord2-${key}`).textContent = chord2[key];
+                    document.getElementById(`chord3-${key}`).textContent = chord3[key];
+                });
+
+                const size = 350;
+
+                // Clear previous
+                d3.select('#chord-container').selectAll('*').remove();
+
+                // Create SVG
+                const svg = d3.select('#chord-container')
+                    .append('svg')
+                    .attr('id', 'chord-svg')
+                    .attr('width', size)
+                    .attr('height', size);
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${size/2},${size/2})`);
+
+                const outerRadius = size * 0.42;
+                const innerRadius = outerRadius - 20;
+
+                // Create ribbon generator
+                const ribbon = d3.ribbon()
+                    .radius(innerRadius);
+
+                // Generate angles for all three chords
+                const angles1 = paramsToAngles(chord1.a, chord1.b, chord1.c, chord1.d);
+                const angles2 = paramsToAngles(chord2.a, chord2.b, chord2.c, chord2.d);
+                const angles3 = paramsToAngles(chord3.a, chord3.b, chord3.c, chord3.d);
+
+                // Create chord data
+                const chordData = [
+                    { angles: angles1, colors: colors1, id: 1 },
+                    { angles: angles2, colors: colors2, id: 2 },
+                    { angles: angles3, colors: colors3, id: 3 }
+                ];
+
+                // Draw chords
+                chordData.forEach(({ angles, colors, id }) => {
+                    const chordPath = ribbon({
+                        source: {
+                            startAngle: angles.s1,
+                            endAngle: angles.s2,
+                            radius: innerRadius
+                        },
+                        target: {
+                            startAngle: angles.s3,
+                            endAngle: angles.s4,
+                            radius: innerRadius
+                        }
+                    });
+
+                    g.append('path')
+                        .attr('d', chordPath)
+                        .attr('fill', colors.solidColor)
+                        .attr('stroke', '#8B4513')
+                        .attr('stroke-width', 1.5)
+                        .attr('opacity', 0.9)
+                        .attr('fill-rule', 'evenodd');
+                });
+            } catch (error) {
+                console.error('Error generating chord chart:', error);
+            }
+        }
+
+        // Chord chart input handler
+        let chordTimeout;
+        chordInput.addEventListener('input', e => {
+            clearTimeout(chordTimeout);
+            chordTimeout = setTimeout(() => generateChordChart(e.target.value), 100);
+        });
+
+        // Chord chart download
+        chordDownloadBtn.addEventListener('click', () => {
+            const svg = document.getElementById('chord-svg');
+            if (!svg) return;
+
+            const size = 350;
+            const canvas = document.createElement('canvas');
+            const scale = 2;
+            canvas.width = size * scale;
+            canvas.height = size * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale);
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+
+            const img = new Image();
+            img.onload = function() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, size, size);
+                ctx.drawImage(img, 0, 0, size, size);
+
+                const inputData = chordInput.value.trim();
+                const filename = inputData ? `chord-${inputData.replace(/[^a-z0-9]/gi, '-').substring(0, 20)}.png` : 'chord-chart.png';
+
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+
+            img.onerror = function() {
+                console.error('Failed to load SVG for download');
+            };
+
+            img.src = svgDataUrl;
+        });
+
+        // Initial chord chart generation
+        generateChordChart(chordInput.value);
     </script>
 </body>
 </html>
